@@ -12,14 +12,14 @@ $ op --version
 ```
 - Have your 1password username, password, and signin url handy
 - `pip install onepassword2` \
-   -- or, for a local install -- \
-   `make local install`
+   __or, for a local install__ \
+   `make local_install`
 
 ## Usage
 
 ### CLI
 
-The `op` cli tool has a _lot_ of options for managing multiple accounts, profiles, etc.  Sessions opened with the cli terminate after 10 minutes, requirinng the user to re-authenticate interactively.  This is good security.  However, if you need long running, non-interactive usage, this is a hindrance. This python module comes with a handy CLI to automagify the signin process.
+The `op` cli tool has a _lot_ of options for managing multiple accounts, profiles, etc.  Sessions opened with the cli terminate after 10 minutes, requiring the user to re-authenticate interactively.  This is good security.  However, if you need long running, non-interactive usage, it's a hindrance. onepassword2 comes with a handy CLI to automagify the signin process.
 
 ```bash
 export OP_ACCOUNT='user@example.com'
@@ -52,3 +52,7 @@ for v in o.vaults():
     print(v)
 
 ```
+
+## TODO
+
+A full list of the wrapped commands needs to be written.
