@@ -53,6 +53,30 @@ for v in o.vaults():
 
 ```
 
+List items
+
+```python
+for d in o.items():
+    print(d)
+```
+
+Get a single item as a python dictionary
+
+```python
+item = o.item("my item")
+print(item)
+```
+
+Get a single item as an object with handy methods to modify fields
+
+```python
+item = o.item("my item", as_obj=True)
+item.set("notesPlain", "new value for notes")
+item.save()
+
+```
+
+
 ## TODO
 
 A full list of the wrapped commands needs to be written.
