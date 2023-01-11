@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
 import argparse
 from subprocess import Popen, PIPE
 import os, json
@@ -27,9 +26,9 @@ def run(cmd, splitlines=False, env=None, raise_exception=False):
         raise RunException(err)
     return (out, err, exitcode)
 
-class OP2():
+class OP2(object):
 
-    def __init__(self, username, password, hostname):
+    def __init__(self, username: str, password: str, hostname: str):
         self.username = username
         self.password = password
         self.hostname = hostname
@@ -48,16 +47,18 @@ class OP2():
     def signin(self):
         if self.status():
             return
-        
-        run("op account forget  --all 2> /dev/null")
 
         env2 = os.environ.copy()
 
-        env2["OP_PASSWORD"] = self.password
+        env2["OP_ACCOUNT_ALIAS"] = self.username+"@"+self.hostname
+
+        run('op account forget "$OP_ACCOUNT_ALIAS" 2> /dev/null | true', env=env2)
+
         env2["OP_ACCOUNT"] = self.username
+        env2["OP_PASSWORD"] = self.password
         env2["OP_HOSTNAME"] = self.hostname
-        run('echo "$OP_PASSWORD" | op account add --shorthand $OP_ACCOUNT --address "$OP_HOSTNAME" --email "$OP_ACCOUNT" 2> /dev/null', env=env2)
-        out, err, retcode = run('echo $OP_PASSWORD | op signin --account $OP_ACCOUNT -f', splitlines=True, env=env2)
+        run('echo "$OP_PASSWORD" | op account add --shorthand "$OP_ACCOUNT_ALIAS" --address "$OP_HOSTNAME" --email "$OP_ACCOUNT" 2> /dev/null', env=env2)
+        out, err, retcode = run('echo $OP_PASSWORD | op signin --account "$OP_ACCOUNT_ALIAS" -f', splitlines=True, env=env2)
         k,v = out[0].split("=",1)
         k = k[7:]
         v = v[1:-1]
@@ -133,7 +134,7 @@ class OP2():
         return i
 
 
-class OP2Item():
+class OP2Item(object):
     def __init__(self, op2: OP2, item) -> None:
         self.op2 = op2
         self.item = item
@@ -167,3 +168,19 @@ class OP2Item():
                     return f["value"]
 
         return None  
+
+def op_signin():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--account', default=os.getenv('OP_ACCOUNT'), help='onepassword account')
+    parser.add_argument('--password', default=os.getenv('OP_PASSWORD'), help='onepassword password')
+    parser.add_argument('--hostname', default=os.getenv('OP_HOSTNAME'), help='onepassword hostname')
+
+    args = parser.parse_args()
+
+    o = OP2( args.account, args.password, args.hostname)
+    o.signin()
+
+    print('export {}="{}"'.format(o.session_token[0], o.session_token[1]))
+
+if __name__ == '__main__':
+    op_signin()

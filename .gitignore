@@ -2,3 +2,6 @@ tmp
 venv
 __pycache__
 .envrc
+build
+dist
+*.egg-info
