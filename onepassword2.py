@@ -5,6 +5,13 @@ import argparse
 from subprocess import Popen, PIPE
 import os, json
 
+
+DEBUG = False
+
+def debug(s):
+    if DEBUG:
+        print(s)
+
 class RunException(Exception):
     pass
 
@@ -28,11 +35,11 @@ def run(cmd, splitlines=False, env=None, raise_exception=False):
 
 class OP2(object):
 
-    def __init__(self, username: str, password: str, hostname: str):
+    def __init__(self, username: str, password: str, hostname: str, session_token = None):
         self.username = username
         self.password = password
         self.hostname = hostname
-        self.session_token = None
+        self.session_token = session_token
 
     def status(self):
         if self.session_token == None:
@@ -104,6 +111,7 @@ class OP2(object):
 
     def _get(self, thing, id):
         cmd = "op {} get \"{}\" --format=json".format(thing, id)
+        debug(cmd)
         return self._decode(cmd)
 
     def _list_get(self, thing):
@@ -120,27 +128,23 @@ class OP2(object):
     def items(self):
         return self._list_get("item")
 
-    def item(self, item, as_obj=False):
+    def item(self, item):
         if type(item) is dict:
             i = self._get("item", item["id"])
         else:
             # item is a string with the item id
             i = self._get("item", item)
 
-        if as_obj:
-            I = OP2Item(op2=self, item=i)
-            return I
-
         return i
 
+class OP2Item(OP2):
 
-class OP2Item(object):
-    def __init__(self, op2: OP2, item) -> None:
-        self.op2 = op2
-        self.item = item
+    def __init__(self, op2, item):
+        super().__init__(op2.username, op2.password, op2.hostname, op2.session_token)
+        self.item = super().item(item)
 
     def save(self):
-        self.op2._edit(self.item)
+        super()._edit(self.item)
 
     def set(self, k, v):
         if k in ("tags", "title"):

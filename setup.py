@@ -2,7 +2,6 @@
 
 # -*- coding: utf-8 -*-
 
-
 import setuptools
 from setuptools import setup
 
@@ -18,14 +17,14 @@ setup(name='onepassword2',
     author='krezreb',
     author_email='josephbeeson@gmail.com',
     license='MIT',
-    packages=setuptools.find_packages(),
+    packages=["."],
     #install_requires=[
     #    'redis',
     #],
     zip_safe=False,
     entry_points = {
               'console_scripts': [
-                  'op-signin=onepassword2.onepassword2:op_signin'              ],              
+                  'op-signin=onepassword2:op_signin'              ],              
           },
 
     )

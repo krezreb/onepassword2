@@ -67,7 +67,7 @@ item = o.item("my item")
 print(item)
 ```
 
-Get a single item as an object with handy methods to modify fields
+Get a single item as an `OP2Item` object with handy methods to modify fields
 
 ```python
 item = o.item("my item", as_obj=True)
