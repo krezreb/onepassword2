@@ -19,3 +19,6 @@ local_install: clean
 
 test:
 	bash -i test.sh
+
+unititests:
+	python3 -m pytest tests/*py

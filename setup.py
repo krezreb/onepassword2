@@ -18,10 +18,11 @@ setup(name='onepassword2',
     author_email='josephbeeson@gmail.com',
     license='MIT',
     packages=["."],
-    #install_requires=[
-    #    'redis',
-    #],
     zip_safe=False,
+    install_requires=[
+        'fuzzywuzzy',
+        'python-Levenshtein'
+    ],
     entry_points = {
               'console_scripts': [
                   'op-signin=onepassword2:op_signin'              ],              

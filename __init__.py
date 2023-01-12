@@ -1,7 +1,5 @@
-import onepassword2
-#from onepassword2 import OP2
-#from onepassword2 import OP2Item
+from onepassword2 import OP2, OP2Item, MultipleMatchesException, OPException
 
 __all__ = [
-     'OP2', 'OP2Item', 'op_signin'
+     'OP2', 'OP2Item', 'op_signin',  'MultipleMatchesException', 'OPException'
 ] 

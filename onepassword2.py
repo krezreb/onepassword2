@@ -4,7 +4,7 @@
 import argparse
 from subprocess import Popen, PIPE
 import os, json
-
+from fuzzywuzzy import fuzz
 
 DEBUG = False
 
@@ -13,6 +13,15 @@ def debug(s):
         print(s)
 
 class RunException(Exception):
+    pass
+
+class OPException(Exception):
+    pass
+
+class MultipleMatchesException(Exception):
+    pass
+
+class NoVaultException(Exception):
     pass
 
 def run(cmd, splitlines=False, env=None, raise_exception=False):
@@ -79,44 +88,42 @@ class OP2(object):
 
         out, err, exitcode = run(cmd, env=env2)
 
-        return json.loads(out)
-
-    def _edit(self, data):
-        cmd = "op item edit {} ".format(data["id"])
-        cmd += " --title \"{}\" ".format(data["title"])
-        if "urls" in data:
-            cmd += " --url \"{}\" ".format(data["urls"][0]["href"])
-
-        if "tags" in data:
-            if type(data["tags"]) is list:
-                cmd += " --tags \"{}\" ".format(",".join(data["tags"]))
-            else:
-                cmd += " --tags \"{}\" ".format(data["tags"])
-
-        for field in data["fields"]:
-            if "value" in field:
-                cmd += " '{}={}' ".format(field['id'], field["value"])
-
-        self.signin()
-
-        env2 = os.environ.copy()
-        env2[self.session_token[0]] = self.session_token[1]
-
-        out, err, exitcode = run(cmd, env=env2)
-        
+        if exitcode != 0:
+            if "ore than one item matches" in err:
+                raise MultipleMatchesException(err)
+                
+            raise OPException(err)
+        return json.loads(out)   
 
     def _list(self, thing):
         cmd = "op {} list --format=json".format(thing)
         return self._decode(cmd)
 
-    def _get(self, thing, id):
-        cmd = "op {} get \"{}\" --format=json".format(thing, id)
+    def _get(self, which, thing):
+        id = thing
+        if type(thing) is dict:
+            id = thing["id"]
+        cmd = "op {} get \"{}\" --format=json".format(which, id)
         debug(cmd)
+
         return self._decode(cmd)
 
-    def _list_get(self, thing):
+
+    def _list_get(self, thing, filter=None):
         for l1 in self._list(thing):
+            lim = 80
+
+            if filter != None:
+                f = filter.lower()
+                ratio = fuzz.ratio(f, l1["title"].lower())
+                debug("{} fuzzy ratio {}".format(l1["title"], ratio))
+                if f in l1["title"].lower():
+                    ratio = 90
+                if ratio <= lim:
+                    continue
+
             id = l1["id"]
+
             yield self._get(thing, id)
 
     def vaults(self):
@@ -125,29 +132,62 @@ class OP2(object):
     def documents(self):
         return self._list_get("document")
 
-    def items(self):
-        return self._list_get("item")
+    def items(self, filter=None):
+        return self._list_get("item", filter)
 
     def item(self, item):
-        if type(item) is dict:
-            i = self._get("item", item["id"])
-        else:
-            # item is a string with the item id
-            i = self._get("item", item)
+        return self._get("item", item)
 
-        return i
+    def vault(self, vault):
+        return self._get("vault", vault)
 
 class OP2Item(OP2):
 
-    def __init__(self, op2, item):
+    def __init__(self, op2: OP2, item = None):
         super().__init__(op2.username, op2.password, op2.hostname, op2.session_token)
-        self.item = super().item(item)
+        
+        if item == None:
+            self.item = {
+                "fields" : []
+            } 
+        else:
+            self.item = super().item(item)
 
     def save(self):
-        super()._edit(self.item)
+
+        if 'id' not in self.item:
+            cmd = "op item create "
+            if 'vault' not in self.item:
+                raise NoVaultException("No Vault specified for item, cannot save")
+        else:
+
+            cmd = "op item edit {} ".format(self.item["id"])
+    
+        cmd += " --title \"{}\" ".format(self.item["title"])
+        if "urls" in self.item:
+            cmd += " --url \"{}\" ".format(self.item["urls"][0]["href"])
+
+        if "tags" in self.item:
+            if type(self.item["tags"]) is list:
+                cmd += " --tags \"{}\" ".format(",".join(self.item["tags"]))
+            else:
+                cmd += " --tags \"{}\" ".format(self.item["tags"])
+
+        for field in self.item["fields"]:
+            if "value" in field:
+                cmd += " '{}={}' ".format(field['id'], field["value"])
+
+        self.signin()
+
+        env2 = os.environ.copy()
+        env2[self.session_token[0]] = self.session_token[1]
+
+        debug(cmd)
+        out, err, exitcode = run(cmd, env=env2, raise_exception=True)
+
 
     def set(self, k, v):
-        if k in ("tags", "title"):
+        if k in ("tags", "title", "vault"):
             self.item[k] = v
             return True
 
@@ -171,7 +211,7 @@ class OP2Item(OP2):
                 if f["id"] == k:
                     return f["value"]
 
-        return None  
+        return None
 
 def op_signin():
     parser = argparse.ArgumentParser()
