@@ -153,6 +153,26 @@ class OP2Item(OP2):
         else:
             self.item = super().item(item)
 
+    @property
+    def category(self, cat=None):
+        # must be one of Reward Program, Server, Crypto Wallet, Medical Record, Outdoor License, Secure Note, SSH Key, Document, Email Account, Passport, Driver License, Password, Wireless Router, Social Security Number, Software License, Bank Account, Credit Card, Database, Membership, API Credential, Identity, Login.
+        if "category" in self.item:
+            return self.item["category"]
+        if "urls" in self.item:
+            return 'Login'
+        else:
+            return 'Secure Note'
+
+
+    @property
+    def fields(self):
+        f = {}
+        for field in self.item["fields"]:
+            if "id" in field:
+                f[field["id"]] = field
+
+        return f
+
     def save(self):
 
         if 'id' not in self.item:
@@ -177,12 +197,22 @@ class OP2Item(OP2):
             if "value" in field:
                 cmd += " '{}={}' ".format(field['id'], field["value"])
 
+        cmd += " --category \"{}\" ".format(self.category)
+
+
         self.signin()
 
         env2 = os.environ.copy()
         env2[self.session_token[0]] = self.session_token[1]
 
         debug(cmd)
+        out, err, exitcode = run(cmd, env=env2, raise_exception=True)
+
+    def delete(self):
+        cmd = "op item delete \"{}\" ".format(self.item["id"])
+
+        env2 = os.environ.copy()
+        env2[self.session_token[0]] = self.session_token[1]
         out, err, exitcode = run(cmd, env=env2, raise_exception=True)
 
 

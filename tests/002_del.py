@@ -10,7 +10,7 @@ import os
 import onepassword2
 from onepassword2 import OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException
 
-
+import time
 
 class TestSetup(unittest.TestCase):
 
@@ -23,44 +23,33 @@ class TestSetup(unittest.TestCase):
         self.I.signin()
         self.TEST_NOTE_TITLE="unittest note"
 
-    def test_delete_matching(self):
+
+    def test_1_delete_matching(self):
         for i in self.I.items(self.TEST_NOTE_TITLE):
             item = OP2Item(self.I, i)
 
             item.delete()
 
-    def test_vaults(self):
+    def test_2_new_item(self):
 
-        for v in self.I.vaults():
-            print(v)
+        item = OP2Item(self.I)
 
-    def test_item(self):
-        item = OP2Item(self.I, 's2n7wijs7awluzfbngj4nur4u4')
+        item.set('title', self.TEST_NOTE_TITLE)
+        item.set('vault', "Private")
+        item.save()
+        time.sleep(3)
 
-    def test_item_not_exists(self):
+
+    def test_3_delete_single(self):
+        item = OP2Item(self.I, self.TEST_NOTE_TITLE)
+        item.delete()
+
         try:
-            self.I.item("lol")
+            item = OP2Item(self.I, self.TEST_NOTE_TITLE)
             assert False
         except OPException:
             assert True
 
-    def test_item_duplicate(self):
-        try:
-            self.I.item("install-upgrade-pcf.secrets.yml")
-            assert False
-        except MultipleMatchesException:
-            assert True
-
-    def test_new_item_no_vault(self):
-        item = OP2Item(self.I)
-
-        item.set('title', self.TEST_NOTE_TITLE)
-
-        try:
-            item.save()
-            assert False
-        except NoVaultException:
-            assert True
 
 if __name__ == '__main__':
     unittest.main()
