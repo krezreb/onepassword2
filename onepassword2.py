@@ -44,7 +44,7 @@ def run(cmd, splitlines=False, env=None, raise_exception=False):
 
 class OP2(object):
 
-    def __init__(self, username: str, password: str, hostname: str, session_token = None):
+    def __init__(self, username: str, password: str, hostname: str="my.1password.com", session_token = None):
         self.username = username
         self.password = password
         self.hostname = hostname
@@ -95,6 +95,14 @@ class OP2(object):
             raise OPException(err)
         return json.loads(out)   
 
+    def _delete(self, which, thing):
+        cmd = "op {} delete \"{}\" ".format(which, thing)
+
+        env2 = os.environ.copy()
+        env2[self.session_token[0]] = self.session_token[1]
+        out, err, exitcode = run(cmd, env=env2, raise_exception=True)
+
+
     def _list(self, thing):
         cmd = "op {} list --format=json".format(thing)
         return self._decode(cmd)
@@ -126,8 +134,8 @@ class OP2(object):
 
             yield self._get(thing, id)
 
-    def vaults(self):
-        return self._list_get("vault")
+    def vaults(self, filter=None):
+        return self._list_get("vault", filter)
 
     def documents(self):
         return self._list_get("document")
@@ -178,7 +186,15 @@ class OP2Item(OP2):
         if 'id' not in self.item:
             cmd = "op item create "
             if 'vault' not in self.item:
-                raise NoVaultException("No Vault specified for item, cannot save")
+
+                count = 0
+                for v in self.vaults():
+                    count += 1
+                if count > 1:
+                    raise NoVaultException("No Vault specified for item, cannot save")
+            else:
+                cmd += " --vault \"{}\"  ".format(self.item["vault"])
+
         else:
 
             cmd = "op item edit {} ".format(self.item["id"])
@@ -209,12 +225,7 @@ class OP2Item(OP2):
         out, err, exitcode = run(cmd, env=env2, raise_exception=True)
 
     def delete(self):
-        cmd = "op item delete \"{}\" ".format(self.item["id"])
-
-        env2 = os.environ.copy()
-        env2[self.session_token[0]] = self.session_token[1]
-        out, err, exitcode = run(cmd, env=env2, raise_exception=True)
-
+        self._delete("item", self.item["id"])
 
     def set(self, k, v):
         if k in ("tags", "title", "vault"):
@@ -255,6 +266,36 @@ def op_signin():
     o.signin()
 
     print('export {}="{}"'.format(o.session_token[0], o.session_token[1]))
+
+class OP2Vault(OP2):
+
+    def __init__(self, op2: OP2, vault = None):
+        super().__init__(op2.username, op2.password, op2.hostname, op2.session_token)
+        
+        if vault == None:
+            self.vault = {} 
+        else:
+            self.vault = super().vault(vault)
+
+    def delete(self):
+        self._delete("vault", self.vault["id"])
+
+    def name(self, name):
+        self.vault["name"] = name
+
+    def save(self):
+        if "id" in self.vault:
+            cmd = "op vault edit {} --name \"{}\"".format(self.vault["id"], self.vault["name"])
+        else:
+            cmd = "op vault create  \"{}\"".format(self.vault["name"])
+
+        self.signin()
+
+        env2 = os.environ.copy()
+        env2[self.session_token[0]] = self.session_token[1]
+
+        debug(cmd)
+        out, err, exitcode = run(cmd, env=env2, raise_exception=True)
 
 if __name__ == '__main__':
     op_signin()

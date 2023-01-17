@@ -21,8 +21,8 @@ class TestSetup(unittest.TestCase):
         setattr(onepassword2, 'DEBUG', True)
         self.I = OP2( username, password, hostname)
         self.I.signin()
-        self.TEST_NOTE_TITLE="unittest note"
-
+        self.TEST_VAULT_NAME="unittest vault " +os.path.basename(__file__)
+        self.TEST_NOTE_TITLE="unittest note " +os.path.basename(__file__)
 
     def test_1_delete_matching(self):
         for i in self.I.items(self.TEST_NOTE_TITLE):

@@ -8,7 +8,7 @@ import tempfile
 
 import os
 import onepassword2
-from onepassword2 import OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException
+from onepassword2 import OP2Vault, OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException
 
 
 
@@ -21,7 +21,33 @@ class TestSetup(unittest.TestCase):
         setattr(onepassword2, 'DEBUG', True)
         self.I = OP2( username, password, hostname)
         self.I.signin()
-        self.TEST_NOTE_TITLE="unittest note"
+        self.TEST_NOTE_TITLE="unittest note "+os.path.basename(__file__)
+        self.TEST_VAULT_NAME="unittest vault " +os.path.basename(__file__)
+
+        v = OP2Vault(self.I, )
+
+        v.name(self.TEST_VAULT_NAME)
+        v.save()
+
+        # dupe item 1
+        item = OP2Item(self.I)
+        item.set('title', self.TEST_NOTE_TITLE)
+        item.set('vault', self.TEST_VAULT_NAME)
+        item.save()
+
+        # dupe item 2
+        item = OP2Item(self.I)
+        item.set('title', self.TEST_NOTE_TITLE)
+        item.set('vault', self.TEST_VAULT_NAME)
+        item.save()
+
+
+        # no dupe item
+        item = OP2Item(self.I)
+        item.set('title', self.TEST_NOTE_TITLE+" no dupe")
+        item.set('vault', self.TEST_VAULT_NAME)
+        item.save()
+
 
     def test_delete_matching(self):
         for i in self.I.items(self.TEST_NOTE_TITLE):
@@ -34,19 +60,19 @@ class TestSetup(unittest.TestCase):
         for v in self.I.vaults():
             print(v)
 
-    def test_item(self):
-        item = OP2Item(self.I, 's2n7wijs7awluzfbngj4nur4u4')
+    def test_get_item(self):
+        OP2Item(self.I, self.TEST_NOTE_TITLE+" no dupe")
 
     def test_item_not_exists(self):
         try:
-            self.I.item("lol")
+            self.I.item("fgjhfghjfghjfghjfghjfgjfghj")
             assert False
         except OPException:
             assert True
 
     def test_item_duplicate(self):
         try:
-            self.I.item("install-upgrade-pcf.secrets.yml")
+            self.I.item(self.TEST_NOTE_TITLE)
             assert False
         except MultipleMatchesException:
             assert True
@@ -61,6 +87,13 @@ class TestSetup(unittest.TestCase):
             assert False
         except NoVaultException:
             assert True
+
+    def tearDown(self):
+        try:
+            v = OP2Vault(self.I, self.TEST_VAULT_NAME)
+            v.delete()
+        except:
+            pass
 
 if __name__ == '__main__':
     unittest.main()

@@ -24,7 +24,7 @@ The `op` cli tool has a _lot_ of options for managing multiple accounts, profile
 ```bash
 export OP_ACCOUNT='user@example.com'
 export OP_PASSWORD="your password"
-export OP_HOSTNAME="yourhost.1password.com"
+export OP_HOSTNAME="my.1password.com"
 
 eval $(op-signin)
 
@@ -45,6 +45,9 @@ naaizerttzertzefzyhjroeqrq    Private
 username = "user@example.com"
 password = "your password"
 hostname = "yourhost.1password.com"
+
+from onepassword2 import OP2
+
 o = OP2( username, password, hostname)
 o.signin()
 
@@ -70,13 +73,38 @@ print(item)
 Get a single item as an `OP2Item` object with handy methods to modify fields
 
 ```python
-item = o.item("my item", as_obj=True)
+from onepassword2 import OP2, OP2Item
+
+item = OP2Item(o, "my item")
+item.set("notesPlain", "new value for notes")
+item.save()
+```
+
+Make a new secure note
+
+```python
+from onepassword2 import OP2, OP2Item
+
+item = OP2Item(o)
+item.set("title", "my note")
+item.set("notesPlain", "new value for notes")
+item.save()
+```
+
+If you have more than one vault, you'll need to specify which one to save the secure note to:
+
+```python
+
+from onepassword2 import OP2, OP2Item, OP2Vault
+
+v = OP2Vault(o)
+v.name("my new vault")
+v.save()
+
+item = OP2Item(o)
+item.set("title", "my note")
+item.set("vault", "my new vault")
 item.set("notesPlain", "new value for notes")
 item.save()
 
-```
 
-
-## TODO
-
-A full list of the wrapped commands needs to be written.
