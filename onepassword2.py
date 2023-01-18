@@ -103,22 +103,26 @@ class OP2(object):
         out, err, exitcode = run(cmd, env=env2, raise_exception=True)
 
 
-    def _list(self, thing):
+    def _list(self, thing, vault=None):
         cmd = "op {} list --format=json".format(thing)
+        if vault != None:
+            cmd += " --vault \"{}\" ".format(vault)
         return self._decode(cmd)
 
-    def _get(self, which, thing):
+    def _get(self, which, thing, vault=None):
         id = thing
         if type(thing) is dict:
             id = thing["id"]
         cmd = "op {} get \"{}\" --format=json".format(which, id)
+        if vault != None:
+            cmd += " --vault \"{}\" ".format(vault)
         debug(cmd)
 
         return self._decode(cmd)
 
 
-    def _list_get(self, thing, filter=None):
-        for l1 in self._list(thing):
+    def _list_get(self, thing, filter=None, vault=None):
+        for l1 in self._list(thing, vault=vault):
             lim = 80
 
             if filter != None:
@@ -140,18 +144,18 @@ class OP2(object):
     def documents(self):
         return self._list_get("document")
 
-    def items(self, filter=None):
-        return self._list_get("item", filter)
+    def items(self, filter=None, vault=None):
+        return self._list_get("item", filter, vault)
 
-    def item(self, item):
-        return self._get("item", item)
+    def item(self, item, vault=None):
+        return self._get("item", item, vault=vault)
 
     def vault(self, vault):
         return self._get("vault", vault)
 
 class OP2Item(OP2):
 
-    def __init__(self, op2: OP2, item = None):
+    def __init__(self, op2: OP2, item = None, vault = None):
         super().__init__(op2.username, op2.password, op2.hostname, op2.session_token)
         
         if item == None:
@@ -159,7 +163,7 @@ class OP2Item(OP2):
                 "fields" : []
             } 
         else:
-            self.item = super().item(item)
+            self.item = super().item(item, vault)
 
     @property
     def category(self, cat=None):
@@ -283,6 +287,10 @@ class OP2Vault(OP2):
     def name(self, name):
         self.vault["name"] = name
 
+    @property
+    def id(self):
+        return self.vault["id"]
+
     def save(self):
         if "id" in self.vault:
             cmd = "op vault edit {} --name \"{}\"".format(self.vault["id"], self.vault["name"])
@@ -296,6 +304,9 @@ class OP2Vault(OP2):
 
         debug(cmd)
         out, err, exitcode = run(cmd, env=env2, raise_exception=True)
+
+        if "id" not in self.vault:
+            self.vault = super().vault(self.vault["name"])
 
 if __name__ == '__main__':
     op_signin()

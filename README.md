@@ -80,6 +80,35 @@ item.set("notesPlain", "new value for notes")
 item.save()
 ```
 
+If more than one item has the same name, you'll get a `MultipleMatchesException`
+
+```python
+from onepassword2 import OP2, OP2Item, MultipleMatchesException
+
+item1 = OP2Item(o)
+item1.set("title", "my handy item")
+item1.set("notesPlain", "new value for notes")
+item1.save()
+
+item2 = OP2Item(o)
+item2.set("title", "my handy item")
+item2.set("notesPlain", "hahaha same title, different content")
+item2.save()
+
+try:
+    item = OP2Item(o, "my item")
+    print(item)
+except MultipleMatchesException:
+    for i in o.items("my item"):
+        item = OP2Item(o, i["id"])
+        ...
+
+
+
+
+
+```
+
 Make a new secure note
 
 ```python
@@ -106,5 +135,5 @@ item.set("title", "my note")
 item.set("vault", "my new vault")
 item.set("notesPlain", "new value for notes")
 item.save()
-
+```
 
