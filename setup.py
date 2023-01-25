@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     
 setup(name='onepassword2',
-    version='1.0',
+    version='1.1',
     description='A python wrapper for onepassword cli version 2',
     long_description=long_description,
     long_description_content_type="text/markdown",      

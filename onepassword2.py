@@ -24,6 +24,9 @@ class MultipleMatchesException(Exception):
 class NoVaultException(Exception):
     pass
 
+class NoSuchVaultException(Exception):
+    pass
+
 def run(cmd, splitlines=False, env=None, raise_exception=False):
     # you had better escape cmd cause it's goin to the shell as is
     if env == None:
@@ -197,7 +200,7 @@ class OP2Item(OP2):
                 if count > 1:
                     raise NoVaultException("No Vault specified for item, cannot save")
             else:
-                cmd += " --vault \"{}\"  ".format(self.item["vault"])
+                    cmd += " --vault \"{}\"  ".format(self.item["vault"])
 
         else:
 
@@ -279,14 +282,17 @@ class OP2Vault(OP2):
         if vault == None:
             self.vault = {} 
         else:
-            self.vault = super().vault(vault)
+            try:
+                self.vault = super().vault(vault)
+            except OPException:
+                raise NoSuchVaultException("Vault {} does not exist".format(vault))
 
     def delete(self):
         self._delete("vault", self.vault["id"])
 
     def name(self, name):
         self.vault["name"] = name
-
+        
     @property
     def id(self):
         return self.vault["id"]
@@ -306,7 +312,7 @@ class OP2Vault(OP2):
         out, err, exitcode = run(cmd, env=env2, raise_exception=True)
 
         if "id" not in self.vault:
-            self.vault = super().vault(self.vault["name"])
+            self.vault = super().vault(self.vault["name"]) 
 
 if __name__ == '__main__':
     op_signin()
