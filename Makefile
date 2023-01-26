@@ -4,14 +4,14 @@ setup_dev:
 	pip3 install twine sdist bdist_wheel
 
 clean:
-	rm -rf build dist *egg-info */__pycache__
-
+	@rm -rf build dist *egg-info */__pycache__ tmp
 
 build: clean
 	python3 setup.py sdist bdist_wheel
 
 publish_py2: build
 	python3 -m twine upload dist/*
+	make clean
 
 local_install: clean
 	pip3 uninstall -y onepassword2

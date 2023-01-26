@@ -8,7 +8,7 @@ import tempfile
 
 import os
 import onepassword2
-from onepassword2 import OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException
+from onepassword2 import OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException, NoSuchItemException
 
 import time
 
@@ -47,7 +47,7 @@ class TestSetup(unittest.TestCase):
         try:
             item = OP2Item(self.I, self.TEST_NOTE_TITLE)
             assert False
-        except OPException:
+        except NoSuchItemException:
             assert True
 
 

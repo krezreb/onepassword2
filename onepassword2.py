@@ -27,6 +27,9 @@ class NoVaultException(Exception):
 class NoSuchVaultException(Exception):
     pass
 
+class NoSuchItemException(Exception):
+    pass
+
 def run(cmd, splitlines=False, env=None, raise_exception=False):
     # you had better escape cmd cause it's goin to the shell as is
     if env == None:
@@ -151,7 +154,12 @@ class OP2(object):
         return self._list_get("item", filter, vault)
 
     def item(self, item, vault=None):
-        return self._get("item", item, vault=vault)
+        try:
+            return self._get("item", item, vault=vault)
+        except OPException:
+            if vault == None:
+                raise NoSuchItemException("Item {} does not exist".format(item))
+            raise NoSuchItemException("Item {} does not exist in vault {}".format(item, vault))
 
     def vault(self, vault):
         return self._get("vault", vault)

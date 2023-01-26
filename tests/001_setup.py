@@ -8,7 +8,7 @@ import tempfile
 
 import os
 import onepassword2
-from onepassword2 import OP2Vault, OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException
+from onepassword2 import OP2Vault, OP2, OP2Item, OPException, MultipleMatchesException, NoVaultException, NoSuchItemException
 
 
 
@@ -67,7 +67,7 @@ class TestSetup(unittest.TestCase):
         try:
             self.I.item("fgjhfghjfghjfghjfghjfgjfghj")
             assert False
-        except OPException:
+        except NoSuchItemException:
             assert True
 
     def test_item_duplicate(self):
