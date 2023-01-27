@@ -137,3 +137,21 @@ item.set("notesPlain", "new value for notes")
 item.save()
 ```
 
+Example username/password combo:
+
+```python
+
+item = OP2Item(o)
+item.set("title", "my account")
+item.set('url',  "http://example.com")
+item.set('username',  "username@example.com")
+item.set('password',  "321657PASKJHKUH")
+
+# urls can also have notes
+item.set('notesPlain',  "notes here")
+
+# tags can be set as an array
+item.set('tags',  ["tags", "go", "here"])
+
+item.save()
+```

@@ -10,12 +10,13 @@ build: clean
 	python3 setup.py sdist bdist_wheel
 
 publish_py2: build
-	python3 -m twine upload dist/*
+	keyring --disable && python3 -m twine upload dist/*
 	make clean
 
 local_install: clean
 	pip3 uninstall -y onepassword2
 	python3 setup.py install --user
+	make clean
 
 test:
 	bash -i test.sh

@@ -40,6 +40,7 @@ class TestSetup(unittest.TestCase):
         time.sleep(3)
 
 
+
     def test_3_delete_single(self):
         item = OP2Item(self.I, self.TEST_NOTE_TITLE)
         item.delete()

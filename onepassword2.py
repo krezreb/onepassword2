@@ -74,7 +74,7 @@ class OP2(object):
 
         env2["OP_ACCOUNT_ALIAS"] = self.username+"@"+self.hostname
 
-        run('op account forget "$OP_ACCOUNT_ALIAS" 2> /dev/null | true', env=env2)
+        #run('op account forget "$OP_ACCOUNT_ALIAS" 2> /dev/null | true', env=env2)
 
         env2["OP_ACCOUNT"] = self.username
         env2["OP_PASSWORD"] = self.password
@@ -247,13 +247,19 @@ class OP2Item(OP2):
             self.item[k] = v
             return True
 
-        if "fields" in self.item:
-            for f in self.item["fields"]:
-                if f["id"] == k:
-                    f["value"] = v
-                    return True
+        if k == "url":
+            self.item["urls"] = [{"href" : v}]
+            
+        if "fields" not in self.item:
+            self.item["fields"] = []
 
-        return False        
+        for f in self.item["fields"]:
+            if f["id"] == k:
+                f["value"] = v
+                return
+        self.item["fields"].append(
+            {"id": k, "value": v}
+        )
 
     def get(self, k):
         if k in ("tags", "title"):

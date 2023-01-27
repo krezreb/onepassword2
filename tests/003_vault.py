@@ -61,6 +61,20 @@ class TestSetup(unittest.TestCase):
         v = OP2Vault(self.I,  self.TEST_VAULT_NAME)
         OP2Item(self.I, self.TEST_ITEM_TITLE, vault=v.id)
 
+    def test_2_new_url(self):
+
+        v = OP2Vault(self.I,  self.TEST_VAULT_NAME)
+        item = OP2Item(self.I)
+
+        item.set('title', self.TEST_ITEM_TITLE+'url')
+        item.set('vault',  v.id)
+        item.set('url',  "http://lol.cat")
+        item.set('username',  "username")
+        item.set('password',  "password")
+        item.set('notesPlain',  "notes here")
+        item.set('tags',  ["tags", "go", "here"])
+        item.save()
+        time.sleep(3)
 
     def tearDown(self):
         try:
