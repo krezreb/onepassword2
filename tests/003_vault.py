@@ -18,8 +18,9 @@ class TestSetup(unittest.TestCase):
         username = os.getenv('OP_ACCOUNT')
         password = os.getenv('OP_PASSWORD')
         hostname = os.getenv('OP_HOSTNAME')
+        secret_key = os.getenv('OP_SECRET_KEY')
         setattr(onepassword2, 'DEBUG', True)
-        self.I = OP2( username, password, hostname)
+        self.I = OP2( username, password, secret_key, hostname)
         self.I.signin()
         self.TEST_VAULT_NAME="unittest vault "+os.path.basename(__file__)
         self.TEST_ITEM_TITLE="unittest item "+os.path.basename(__file__)
@@ -60,6 +61,13 @@ class TestSetup(unittest.TestCase):
     def test_02_get_in_specific_vault(self):
         v = OP2Vault(self.I,  self.TEST_VAULT_NAME)
         OP2Item(self.I, self.TEST_ITEM_TITLE, vault=v.id)
+
+    def test_02_change_title_in_specific_vault(self):
+        v = OP2Vault(self.I,  self.TEST_VAULT_NAME)
+        item = OP2Item(self.I, self.TEST_ITEM_TITLE, vault=v.id)
+        item.set('tags',  ["tags", "go", "here"])
+        item.set('title', self.TEST_ITEM_TITLE+' CHANGED')
+        item.save()
 
     def test_2_new_url(self):
 

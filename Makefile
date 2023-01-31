@@ -10,7 +10,7 @@ build: clean
 	python3 setup.py sdist bdist_wheel
 
 publish_py2: build
-	keyring --disable && python3 -m twine upload dist/*
+	python3 -m twine upload dist/*
 	make clean
 
 local_install: clean

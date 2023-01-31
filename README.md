@@ -45,10 +45,11 @@ naaizerttzertzefzyhjroeqrq    Private
 username = "user@example.com"
 password = "your password"
 hostname = "yourhost.1password.com"
+secret_key = "JA-EKJHGQ-LKIUHG-12345-12345-12345-32154"
 
 from onepassword2 import OP2
 
-o = OP2( username, password, hostname)
+o = OP2( username, password, secret_key, hostname)
 o.signin()
 
 for v in o.vaults():
