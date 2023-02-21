@@ -1,6 +1,6 @@
 # OnePassword CLI v2 python wrapper
 
-Quick n dirty python wrapper for the [1password cli](https://developer.1password.com/docs/cli) **version 2**.
+Simple python wrapper for the [1password cli](https://developer.1password.com/docs/cli) **version 2**.
 
 ## Setup
 
@@ -15,6 +15,10 @@ $ op --version
    __or, for a local install__ \
    `make local_install`
 
+If, for some reason python-Levenshtein fails to compile, skip it
+
+- `pip install fuzzywuzzy && pip install --no-deps onepassword2`
+
 ## Usage
 
 ### CLI
@@ -25,6 +29,7 @@ The `op` cli tool has a _lot_ of options for managing multiple accounts, profile
 export OP_ACCOUNT='user@example.com'
 export OP_PASSWORD="your password"
 export OP_HOSTNAME="my.1password.com"
+export OP_SECRET_KEY="JA-EKJHGQ-LKIUHG-12345-12345-12345-32154"
 
 eval $(op-signin)
 

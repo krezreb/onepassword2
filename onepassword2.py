@@ -236,7 +236,7 @@ class OP2Item(OP2):
 
         for field in self.item["fields"]:
             if "value" in field:
-                cmd += " {}={} ".format(field['id'], shlex.quote(field["value"]))
+                cmd += " {}={} ".format(shlex.quote(field['id']), shlex.quote(field["value"]))
 
         self.signin()
 
