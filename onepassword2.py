@@ -174,7 +174,7 @@ class OP2(object):
 
 class OP2Item(OP2):
 
-    def __init__(self, op2: OP2, item = None, vault = None):
+    def __init__(self, op2: OP2, item = None, vault = None, withtag = None):
         super().__init__(op2.username, op2.password, op2.secret_key, op2.hostname, op2.session_token)
         
         if item == None:
@@ -182,7 +182,23 @@ class OP2Item(OP2):
                 "fields" : []
             } 
         else:
-            self.item = super().item(item, vault)
+            if withtag == None:
+                self.item = super().item(item, vault)
+            else:
+                debug("searching for {} with tag {}".format(item, withtag))
+
+                self.item = None
+                for i in super().items(item, vault):
+                    if i["title"] != item:
+                        continue
+                    if withtag in i["tags"]:
+                        self.item = i
+                        break
+                if self.item == None:
+                    if vault == None:
+                        raise NoSuchItemException("Item {} does not exist with tag {}".format(item, withtag))
+                    else:
+                        raise NoSuchItemException("Item {} does not exist with tag {} in vault {}".format(item, withtag, vault))
 
     @property
     def category(self, cat=None):
